@@ -1,138 +1,3 @@
-<!-- Shader -->
-<!DOCTYPE html>
-
-<html lang="en">
-<head>
-<meta charset="utf-8"/>
-<meta content="width=device-width,initial-scale=1.0" name="viewport"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #000;
-    }
-  </style>
-</head>
-<body>
-<!-- STITCH_SHADER_START:ANIMATION_2 class="fixed inset-0 w-full h-full" -->
-<div class="fixed inset-0 w-full h-full" style="display:block;">
-<canvas id="shader-canvas-ANIMATION_2" style="display:block;width:100%;height:100%"></canvas>
-<script>
-(function() {
-  const canvas = document.getElementById('shader-canvas-ANIMATION_2');
-
-  // Sync the WebGL drawing-buffer size with the CSS-driven layout size.
-  // This fires on initial layout and whenever the element is resized.
-  function syncSize() {
-    const w = canvas.clientWidth  || 1280;
-    const h = canvas.clientHeight || 720;
-    if (canvas.width !== w || canvas.height !== h) {
-      canvas.width  = w;
-      canvas.height = h;
-    }
-  }
-  if (typeof ResizeObserver !== 'undefined') {
-    new ResizeObserver(syncSize).observe(canvas);
-  }
-  syncSize();
-
-  const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-  if (!gl) return;
-  const vs = `attribute vec2 a_position;
-varying vec2 v_texCoord;
-void main() {
-  v_texCoord = a_position * 0.5 + 0.5;
-  gl_Position = vec4(a_position, 0.0, 1.0);
-}`;
-  const fs = `precision highp float;
-uniform float u_time;
-uniform vec2 u_resolution;
-
-varying vec2 v_texCoord;
-
-void main() {
-    vec2 uv = v_texCoord;
-    
-    // Subtle moving diagonal lines representing "pathways"
-    float line = sin((uv.x + uv.y) * 10.0 + u_time * 0.5) * 0.5 + 0.5;
-    line = smoothstep(0.48, 0.5, line) - smoothstep(0.5, 0.52, line);
-    
-    // Dark navy base
-    vec3 color = vec3(0.043, 0.067, 0.125); // #0B1120
-    
-    // Electric blue glow for the lines
-    vec3 blue = vec3(0.231, 0.510, 0.965); // #3B82F6
-    color += blue * line * 0.15;
-    
-    // Ambient bottom-to-top gradient for growth feel
-    color += blue * (uv.y * 0.05);
-    
-    gl_FragColor = vec4(color, 1.0);
-}`;
-  function cs(type, src) {
-    const s = gl.createShader(type);
-    gl.shaderSource(s, src);
-    gl.compileShader(s);
-    return s;
-  }
-  const prog = gl.createProgram();
-  gl.attachShader(prog, cs(gl.VERTEX_SHADER, vs));
-  gl.attachShader(prog, cs(gl.FRAGMENT_SHADER, fs));
-  gl.linkProgram(prog);
-  gl.useProgram(prog);
-  const buf = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
-  const pos = gl.getAttribLocation(prog, 'a_position');
-  gl.enableVertexAttribArray(pos);
-  gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
-  const uTime = gl.getUniformLocation(prog, 'u_time');
-  const uRes = gl.getUniformLocation(prog, 'u_resolution');
-  const uMouse = gl.getUniformLocation(prog, 'u_mouse');
-
-  // u_mouse is in pixel coordinates matching u_resolution (ShaderToy convention).
-  // Shaders that need normalized coords should use: u_mouse / u_resolution.
-  let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
-  window.addEventListener('mousemove', (event) => {
-    const rect = canvas.getBoundingClientRect();
-    if (rect.width && rect.height) {
-      const nx = (event.clientX - rect.left) / rect.width;
-      const ny = 1.0 - (event.clientY - rect.top) / rect.height;
-      mouse.x = nx * canvas.width;
-      mouse.y = ny * canvas.height;
-    }
-  });
-
-  function render(t) {
-    if (typeof ResizeObserver === 'undefined') syncSize();
-    gl.viewport(0, 0, canvas.width, canvas.height);
-    if (uTime) gl.uniform1f(uTime, t * 0.001);
-    if (uRes) gl.uniform2f(uRes, canvas.width, canvas.height);
-    if (uMouse) gl.uniform2f(uMouse, mouse.x, mouse.y);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-    requestAnimationFrame(render);
-  }
-  render(0);
-})();
-</script>
-</div>
-<!-- STITCH_SHADER_END:ANIMATION_2 -->
-</body>
-</html>
-
-
-<!-- Craveer Logo -->
-<svg width="200" height="60" viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M20 10C20 10 25 15 25 25C25 35 20 40 20 40" stroke="#3B82F6" stroke-width="4" stroke-linecap="round"/>
-  <path d="M15 15C15 15 18 18 18 25C18 32 15 35 15 35" stroke="#3B82F6" stroke-width="3" stroke-opacity="0.6" stroke-linecap="round"/>
-  <text x="40" y="40" fill="white" style="font-family: 'Inter', sans-serif; font-weight: 800; font-size: 32px; letter-spacing: -0.05em;">Craveer</text>
-  <path d="M10 5L10 45" stroke="#3B82F6" stroke-width="2" stroke-dasharray="4 4"/>
-</svg>
-
-<!-- Design System -->
 <!DOCTYPE html>
 
 <html class="dark" lang="en"><head>
@@ -142,60 +7,59 @@ void main() {
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
                     "colors": {
-                        "surface-bright": "#363a3b",
-                        "surface-dim": "#101415",
                         "primary": "#c1c6db",
-                        "tertiary-fixed": "#d8e3fb",
-                        "on-tertiary": "#263143",
-                        "tertiary-fixed-dim": "#bcc7de",
                         "inverse-on-surface": "#2d3133",
-                        "surface-container-high": "#272a2c",
-                        "secondary-fixed-dim": "#adc6ff",
-                        "on-secondary-container": "#e6ecff",
-                        "on-primary": "#2a3040",
-                        "outline": "#909097",
-                        "surface-variant": "#323537",
-                        "on-background": "#e0e3e5",
-                        "surface-container-lowest": "#0b0f10",
-                        "primary-fixed-dim": "#c1c6db",
-                        "on-tertiary-fixed": "#111c2d",
-                        "inverse-surface": "#e0e3e5",
-                        "surface": "#101415",
-                        "surface-container": "#1d2022",
-                        "on-error-container": "#ffdad6",
-                        "surface-container-low": "#191c1e",
+                        "tertiary": "#bcc7de",
                         "secondary": "#adc6ff",
                         "on-error": "#690005",
-                        "inverse-primary": "#585e70",
                         "on-secondary": "#002e6a",
-                        "on-primary-container": "#777c90",
+                        "primary-fixed": "#dde2f8",
+                        "inverse-surface": "#e0e3e5",
+                        "surface-container-low": "#191c1e",
+                        "tertiary-fixed-dim": "#bcc7de",
+                        "surface-container": "#1d2022",
+                        "inverse-primary": "#585e70",
                         "on-secondary-fixed-variant": "#004395",
-                        "primary-container": "#0b1120",
-                        "on-primary-fixed": "#151b2b",
                         "error-container": "#93000a",
-                        "on-surface-variant": "#c6c6cd",
+                        "tertiary-fixed": "#d8e3fb",
+                        "on-background": "#e0e3e5",
+                        "secondary-fixed": "#d8e2ff",
+                        "outline": "#909097",
+                        "on-secondary-container": "#e6ecff",
+                        "on-secondary-fixed": "#001a42",
+                        "on-primary-fixed-variant": "#414658",
+                        "surface-container-lowest": "#0b0f10",
+                        "on-tertiary-container": "#727e93",
                         "on-tertiary-fixed-variant": "#3c475a",
+                        "primary-container": "#0b1120",
+                        "surface-bright": "#363a3b",
                         "outline-variant": "#45464c",
-                        "surface-tint": "#c1c6db",
                         "surface-container-highest": "#323537",
-                        "background": "#101415",
+                        "on-tertiary": "#263143",
+                        "on-primary-fixed": "#151b2b",
+                        "on-error-container": "#ffdad6",
+                        "on-primary": "#2a3040",
+                        "primary-fixed-dim": "#c1c6db",
+                        "background": "#0b1120",
                         "on-surface": "#e0e3e5",
                         "error": "#ffb4ab",
-                        "on-tertiary-container": "#727e93",
-                        "tertiary": "#bcc7de",
-                        "primary-fixed": "#dde2f8",
-                        "on-primary-fixed-variant": "#414658",
-                        "on-secondary-fixed": "#001a42",
+                        "on-surface-variant": "#c6c6cd",
+                        "secondary-fixed-dim": "#adc6ff",
+                        "surface-dim": "#101415",
+                        "surface": "#101415",
+                        "tertiary-container": "#061223",
                         "secondary-container": "#0566d9",
-                        "secondary-fixed": "#d8e2ff",
-                        "tertiary-container": "#061223"
+                        "surface-variant": "#323537",
+                        "surface-tint": "#c1c6db",
+                        "on-primary-container": "#777c90",
+                        "surface-container-high": "#272a2c",
+                        "on-tertiary-fixed": "#111c2d"
                     },
                     "borderRadius": {
                         "DEFAULT": "0.25rem",
@@ -204,35 +68,35 @@ void main() {
                         "full": "9999px"
                     },
                     "spacing": {
-                        "stack-sm": "12px",
-                        "gutter": "32px",
-                        "container-max": "1280px",
-                        "margin-x": "64px",
                         "stack-lg": "48px",
+                        "container-max": "1280px",
                         "stack-md": "24px",
-                        "section-padding": "120px"
+                        "section-padding": "120px",
+                        "stack-sm": "12px",
+                        "margin-x": "64px",
+                        "gutter": "32px"
                     },
                     "fontFamily": {
-                        "label-md": ["Inter"],
-                        "body-md": ["Inter"],
-                        "label-caps": ["Inter"],
+                        "display-lg": ["Inter"],
                         "display-sm": ["Inter"],
-                        "headline-lg": ["Inter"],
-                        "headline-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "label-caps": ["Inter"],
                         "headline-lg-mobile": ["Inter"],
+                        "headline-lg": ["Inter"],
                         "body-lg": ["Inter"],
-                        "display-lg": ["Inter"]
+                        "body-md": ["Inter"],
+                        "headline-md": ["Inter"]
                     },
                     "fontSize": {
-                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
-                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
-                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "600"}],
+                        "display-lg": ["72px", {"lineHeight": "80px", "letterSpacing": "-0.04em", "fontWeight": "700"}],
                         "display-sm": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.03em", "fontWeight": "700"}],
-                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
-                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "600"}],
                         "headline-lg-mobile": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
                         "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
-                        "display-lg": ["72px", {"lineHeight": "80px", "letterSpacing": "-0.04em", "fontWeight": "700"}]
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
                     }
                 },
             },
@@ -269,13 +133,32 @@ void main() {
             opacity: 1;
             transform: translateY(0);
         }
+        #mobile-menu {
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(100%);
+        }
+        #mobile-menu.active {
+            transform: translateX(0);
+        }
+        /* WebGL Shader Container */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+            background: #0b1120;
+        }
     </style>
 </head>
-<body class="bg-surface text-on-surface selection:bg-secondary/30">
-<!-- Sticky Navigation -->
-<header class="fixed top-0 w-full bg-surface/60 backdrop-blur-xl border-b border-white/10 z-50 flex justify-between items-center px-margin-x h-20 shadow-sm">
+<body class="bg-primary-container text-on-surface selection:bg-secondary/30 overflow-x-hidden">
+<!-- WebGL Background -->
+<canvas id="bg-canvas"></canvas>
+<header class="fixed top-0 w-full bg-surface/60 backdrop-blur-xl border-b border-white/10 z-50 flex justify-between items-center px-6 md:px-margin-x h-20 shadow-sm">
 <div class="flex items-center gap-2">
-<img alt="Craveer Logo" class="h-8 w-auto" src="data:image/png;base64,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"/>
+<img alt="Craveer Logo" class="h-8 w-auto" src="https://lh3.googleusercontent.com/aida/AP1WRLvWQ_r5qH4Fv0ggaGKL58ZtTGRRvwtLp3UxpiqZ25cPDFem2v8Fxw6SqMMAYf2G6TeB342WIVRoxnHBBZqmMv2xMjjjZcga6-S5cDlFwjDqvbNil3VKvlpc57-ZiZfeJx88eqyCgRhtqOGbGvuXIq_Zern8_r8HuSvGnUdj43NPs82bFX0ZCvMwoiyfVml6KhHeCHox1cDIoEnxCkzheXCt1rVpBG5tLdSybDcu4eTSo21KQZ_2vfZ5Kv-L"/>
 <span class="font-headline-md text-headline-md font-bold text-on-surface tracking-tight">Craveer</span>
 </div>
 <nav class="hidden md:flex items-center gap-8">
@@ -284,128 +167,50 @@ void main() {
 <a class="text-on-surface-variant hover:text-on-surface transition-colors font-label-md text-label-md hover:scale-105 transition-transform duration-200" href="#pricing">Pricing</a>
 <a class="text-on-surface-variant hover:text-on-surface transition-colors font-label-md text-label-md hover:scale-105 transition-transform duration-200" href="#faq">FAQ</a>
 </nav>
-<button class="bg-secondary-container text-on-secondary-container px-6 py-2.5 rounded-full font-label-md text-label-md hover:scale-105 active:scale-95 transition-all">
-            Get Started
-        </button>
+<div class="flex items-center gap-4">
+<button class="hidden md:block bg-secondary-container text-on-secondary-container px-6 py-2.5 rounded-full font-label-md text-label-md hover:scale-105 active:scale-95 transition-all">
+                Get Started
+            </button>
+<button class="md:hidden text-on-surface p-2 focus:outline-none" id="menu-toggle">
+<span class="material-symbols-outlined text-3xl">menu</span>
+</button>
+</div>
 </header>
+<div class="fixed inset-0 z-[60] bg-surface flex flex-col md:hidden" id="mobile-menu">
+<div class="flex justify-between items-center h-20 px-6 border-b border-white/10">
+<div class="flex items-center gap-2">
+<img alt="Craveer Logo" class="h-8 w-auto" src="https://lh3.googleusercontent.com/aida/AP1WRLvWQ_r5qH4Fv0ggaGKL58ZtTGRRvwtLp3UxpiqZ25cPDFem2v8Fxw6SqMMAYf2G6TeB342WIVRoxnHBBZqmMv2xMjjjZcga6-S5cDlFwjDqvbNil3VKvlpc57-ZiZfeJx88eqyCgRhtqOGbGvuXIq_Zern8_r8HuSvGnUdj43NPs82bFX0ZCvMwoiyfVml6KhHeCHox1cDIoEnxCkzheXCt1rVpBG5tLdSybDcu4eTSo21KQZ_2vfZ5Kv-L"/>
+<span class="font-headline-md text-headline-md font-bold text-on-surface">Craveer</span>
+</div>
+<button class="text-on-surface p-2" id="menu-close">
+<span class="material-symbols-outlined text-3xl">close</span>
+</button>
+</div>
+<div class="flex flex-col p-8 gap-8">
+<a class="text-2xl font-headline-md text-on-surface" href="#services">Services</a>
+<a class="text-2xl font-headline-md text-on-surface" href="#roadmap">Roadmap</a>
+<a class="text-2xl font-headline-md text-on-surface" href="#pricing">Pricing</a>
+<a class="text-2xl font-headline-md text-on-surface" href="#faq">FAQ</a>
+<button class="w-full bg-secondary-container text-on-secondary-container py-4 rounded-full font-headline-md text-headline-md mt-4">
+                Get Started
+            </button>
+</div>
+</div>
 <main class="pt-20">
 <!-- Hero Section -->
-<section class="relative min-h-[90vh] flex items-center overflow-hidden py-section-padding px-margin-x">
-<!-- STITCH_SHADER_START:ANIMATION_2 class="absolute inset-0 w-full h-full opacity-40" -->
-<div class="absolute inset-0 w-full h-full opacity-40" style="display:block;">
-<canvas id="shader-canvas-ANIMATION_2" style="display:block;width:100%;height:100%"></canvas>
-<script>
-(function() {
-  const canvas = document.getElementById('shader-canvas-ANIMATION_2');
-
-  // Sync the WebGL drawing-buffer size with the CSS-driven layout size.
-  // This fires on initial layout and whenever the element is resized.
-  function syncSize() {
-    const w = canvas.clientWidth  || 1280;
-    const h = canvas.clientHeight || 720;
-    if (canvas.width !== w || canvas.height !== h) {
-      canvas.width  = w;
-      canvas.height = h;
-    }
-  }
-  if (typeof ResizeObserver !== 'undefined') {
-    new ResizeObserver(syncSize).observe(canvas);
-  }
-  syncSize();
-
-  const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-  if (!gl) return;
-  const vs = `attribute vec2 a_position;
-varying vec2 v_texCoord;
-void main() {
-  v_texCoord = a_position * 0.5 + 0.5;
-  gl_Position = vec4(a_position, 0.0, 1.0);
-}`;
-  const fs = `precision highp float;
-uniform float u_time;
-uniform vec2 u_resolution;
-
-varying vec2 v_texCoord;
-
-void main() {
-    vec2 uv = v_texCoord;
-    
-    // Subtle moving diagonal lines representing "pathways"
-    float line = sin((uv.x + uv.y) * 10.0 + u_time * 0.5) * 0.5 + 0.5;
-    line = smoothstep(0.48, 0.5, line) - smoothstep(0.5, 0.52, line);
-    
-    // Dark navy base
-    vec3 color = vec3(0.043, 0.067, 0.125); // #0B1120
-    
-    // Electric blue glow for the lines
-    vec3 blue = vec3(0.231, 0.510, 0.965); // #3B82F6
-    color += blue * line * 0.15;
-    
-    // Ambient bottom-to-top gradient for growth feel
-    color += blue * (uv.y * 0.05);
-    
-    gl_FragColor = vec4(color, 1.0);
-}`;
-  function cs(type, src) {
-    const s = gl.createShader(type);
-    gl.shaderSource(s, src);
-    gl.compileShader(s);
-    return s;
-  }
-  const prog = gl.createProgram();
-  gl.attachShader(prog, cs(gl.VERTEX_SHADER, vs));
-  gl.attachShader(prog, cs(gl.FRAGMENT_SHADER, fs));
-  gl.linkProgram(prog);
-  gl.useProgram(prog);
-  const buf = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
-  const pos = gl.getAttribLocation(prog, 'a_position');
-  gl.enableVertexAttribArray(pos);
-  gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
-  const uTime = gl.getUniformLocation(prog, 'u_time');
-  const uRes = gl.getUniformLocation(prog, 'u_resolution');
-  const uMouse = gl.getUniformLocation(prog, 'u_mouse');
-
-  // u_mouse is in pixel coordinates matching u_resolution (ShaderToy convention).
-  // Shaders that need normalized coords should use: u_mouse / u_resolution.
-  let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
-  window.addEventListener('mousemove', (event) => {
-    const rect = canvas.getBoundingClientRect();
-    if (rect.width && rect.height) {
-      const nx = (event.clientX - rect.left) / rect.width;
-      const ny = 1.0 - (event.clientY - rect.top) / rect.height;
-      mouse.x = nx * canvas.width;
-      mouse.y = ny * canvas.height;
-    }
-  });
-
-  function render(t) {
-    if (typeof ResizeObserver === 'undefined') syncSize();
-    gl.viewport(0, 0, canvas.width, canvas.height);
-    if (uTime) gl.uniform1f(uTime, t * 0.001);
-    if (uRes) gl.uniform2f(uRes, canvas.width, canvas.height);
-    if (uMouse) gl.uniform2f(uMouse, mouse.x, mouse.y);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-    requestAnimationFrame(render);
-  }
-  render(0);
-})();
-</script>
-</div>
-<!-- STITCH_SHADER_END:ANIMATION_2 -->
-<div class="relative z-10 max-w-container-max mx-auto grid lg:grid-cols-2 gap-gutter items-center">
-<div class="space-y-stack-lg">
+<section class="relative min-h-[90vh] flex items-center py-16 md:py-section-padding px-6 md:px-margin-x">
+<div class="relative z-10 max-w-container-max mx-auto grid lg:grid-cols-2 gap-12 lg:gap-gutter items-center">
+<div class="space-y-6 md:space-y-stack-lg text-center lg:text-left">
 <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary-container/20 border border-secondary/30 text-secondary font-label-caps text-label-caps uppercase tracking-widest">
                         Elite Career Consulting
                     </div>
-<h1 class="font-display-lg text-display-lg text-on-surface leading-tight tracking-tighter">
+<h1 class="font-headline-lg-mobile md:font-display-lg text-headline-lg-mobile md:text-display-lg text-on-surface leading-tight tracking-tighter">
                         Your Career Starts With Your <span class="text-gradient">Personal Brand</span>
 </h1>
-<p class="font-body-lg text-body-lg text-on-surface-variant max-w-lg">
+<p class="font-body-md md:font-body-lg text-body-md md:text-body-lg text-on-surface-variant max-w-lg mx-auto lg:mx-0">
                         Transform your professional identity with high-end personal branding. We craft stories that recruiters can't ignore.
                     </p>
-<div class="flex flex-wrap gap-stack-md">
+<div class="flex flex-col sm:flex-row flex-wrap gap-4 md:gap-stack-md justify-center lg:justify-start">
 <button class="bg-secondary-container text-on-secondary-container px-8 py-4 rounded-full font-headline-md text-headline-md hover:scale-105 active:scale-95 transition-all shadow-xl shadow-secondary/10">
                             Get Started
                         </button>
@@ -414,27 +219,26 @@ void main() {
                         </button>
 </div>
 </div>
-<div class="relative hidden lg:block">
-<!-- Image placeholder logic: no data-alt for DataStore items -->
-<div class="relative z-10 animate-float">
-<img alt="Elite Career Showcase" class="w-full drop-shadow-2xl" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0iDg5ywUsznOBBUz5guPsb4_ghlOVuGsc3B4K9SX46wBi_Nmq_w_F9SLFnyJm6S-3TnTOb0z7ogJViygWQoZllnue2av4wdrJkEcqCji_zlavGNKupCwO2djg5u9m19FfYC88ZLhX-bStgtXZNWGyHaTqnIili_lVkozDJVVUxZ2mC_AppPK3bMVPihlNNLanoV_0DoxFpwkBRyhpg4uDfsBXsYHzaNI_eEHMaHNa3Gk8pQqnp7yLm0Nt9zkmBbW85p-XdoHNyfTW"/>
+<div class="relative lg:block mt-12 lg:mt-0">
+<div class="relative z-10 animate-float max-w-md mx-auto lg:max-w-none">
+<img alt="LinkedIn Profile Mockup" class="w-full drop-shadow-2xl rounded-xl" src="https://lh3.googleusercontent.com/aida/AP1WRLteeqwHR2fv4INCmf_t3VSx3ZWhvNWLTQR515_lOFmHs79RlO64iAeHDYY-ZyLXwO9HbnW1orHV7tdn4T7d3aIZP6BIkNftdFtSG0DtqWmS5TYYTlAZ5VTKzZN0R31-j38nXFm9hSXf7KLm1-bQFcfzyeFISDnc5oF0v5Wz6trcZgo3l-8xCaLL92gvizIwH-fMtEChLCSq23bDQ5iCmqNnZ1ROpFsshAUQG9HXipcfSRfUpZtBBSav_kKF"/>
 </div>
 <!-- Floating Glass Cards -->
-<div class="absolute -top-10 -right-4 glass-card p-4 rounded-xl flex items-center gap-3 z-20 animate-float [animation-delay:1s]">
-<div class="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center text-secondary">
-<span class="material-symbols-outlined">description</span>
+<div class="absolute -top-6 -right-2 md:-top-10 md:-right-4 glass-card p-3 md:p-4 rounded-xl flex items-center gap-3 z-20 animate-float [animation-delay:1s] scale-90 md:scale-100">
+<div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-secondary/20 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-lg md:text-2xl">description</span>
 </div>
 <div>
-<p class="font-label-md text-label-md text-on-surface">CV Builder</p>
+<p class="font-label-md text-[12px] md:text-label-md text-on-surface">CV Builder</p>
 <p class="text-[10px] text-on-surface-variant">ATS Optimized</p>
 </div>
 </div>
-<div class="absolute top-1/2 -left-10 glass-card p-4 rounded-xl flex items-center gap-3 z-20 animate-float [animation-delay:2s]">
-<div class="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center text-secondary">
-<span class="material-symbols-outlined">share</span>
+<div class="absolute top-1/2 -left-4 md:-left-10 glass-card p-3 md:p-4 rounded-xl flex items-center gap-3 z-20 animate-float [animation-delay:2s] scale-90 md:scale-100">
+<div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-secondary/20 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-lg md:text-2xl">share</span>
 </div>
 <div>
-<p class="font-label-md text-label-md text-on-surface">LinkedIn Makeover</p>
+<p class="font-label-md text-[12px] md:text-label-md text-on-surface">LinkedIn Makeover</p>
 <p class="text-[10px] text-on-surface-variant">5x Profile Views</p>
 </div>
 </div>
@@ -442,102 +246,83 @@ void main() {
 </div>
 </section>
 <!-- Stats Section -->
-<section class="py-24 bg-surface-container-low border-y border-white/5">
-<div class="max-w-container-max mx-auto px-margin-x grid grid-cols-2 md:grid-cols-4 gap-gutter text-center">
+<section class="py-16 md:py-24 bg-surface-container-low border-y border-white/5">
+<div class="max-w-container-max mx-auto px-6 md:px-margin-x grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-gutter text-center">
 <div class="reveal">
-<p class="font-display-sm text-display-sm text-secondary">500+</p>
-<p class="font-label-caps text-label-caps text-on-surface-variant">CVs Crafted</p>
+<p class="font-headline-md md:font-display-sm text-headline-md md:text-display-sm text-secondary">500+</p>
+<p class="font-label-caps text-[10px] md:text-label-caps text-on-surface-variant">CVs Crafted</p>
 </div>
 <div class="reveal">
-<p class="font-display-sm text-display-sm text-secondary">200+</p>
-<p class="font-label-caps text-label-caps text-on-surface-variant">LinkedIn Optimized</p>
+<p class="font-headline-md md:font-display-sm text-headline-md md:text-display-sm text-secondary">200+</p>
+<p class="font-label-caps text-[10px] md:text-label-caps text-on-surface-variant">LinkedIn Optimized</p>
 </div>
 <div class="reveal">
-<p class="font-display-sm text-display-sm text-secondary">95%</p>
-<p class="font-label-caps text-label-caps text-on-surface-variant">Client Satisfaction</p>
+<p class="font-headline-md md:font-display-sm text-headline-md md:text-display-sm text-secondary">95%</p>
+<p class="font-label-caps text-[10px] md:text-label-caps text-on-surface-variant">Client Satisfaction</p>
 </div>
 <div class="reveal">
-<p class="font-display-sm text-display-sm text-secondary">4.9/5</p>
-<p class="font-label-caps text-label-caps text-on-surface-variant">Average Rating</p>
+<p class="font-headline-md md:font-display-sm text-headline-md md:text-display-sm text-secondary">4.9/5</p>
+<p class="font-label-caps text-[10px] md:text-label-caps text-on-surface-variant">Average Rating</p>
 </div>
 </div>
 </section>
 <!-- Services Section -->
-<section class="py-section-padding px-margin-x" id="services">
+<section class="py-16 md:py-section-padding px-6 md:px-margin-x" id="services">
 <div class="max-w-container-max mx-auto">
-<div class="text-center mb-20 space-y-4">
-<h2 class="font-display-sm text-display-sm text-on-surface">Bespoke Career <span class="text-gradient">Services</span></h2>
-<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">Premium positioning for the world's most ambitious professionals.</p>
+<div class="text-center mb-12 md:mb-20 space-y-4">
+<h2 class="font-headline-lg-mobile md:font-display-sm text-headline-lg-mobile md:text-display-sm text-on-surface">Bespoke Career <span class="text-gradient">Services</span></h2>
+<p class="font-body-md md:font-body-lg text-body-md md:text-body-lg text-on-surface-variant max-w-2xl mx-auto">Premium positioning for the world's most ambitious professionals.</p>
 </div>
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
-<!-- Service 1 -->
-<div class="glass-card p-8 rounded-2xl hover:scale-[1.02] transition-transform duration-300 reveal group">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-gutter">
+<div class="glass-card p-6 md:p-8 rounded-2xl hover:scale-[1.02] transition-transform duration-300 reveal group">
 <div class="w-14 h-14 bg-secondary/10 rounded-xl flex items-center justify-center text-secondary mb-6 group-hover:bg-secondary group-hover:text-on-secondary transition-colors">
 <span class="material-symbols-outlined text-3xl">edit_document</span>
 </div>
 <h3 class="font-headline-md text-headline-md text-on-surface mb-4">CV Development</h3>
 <p class="font-body-md text-body-md text-on-surface-variant">ATS-proof, recruiter-centric narratives that highlight your unique value proposition.</p>
 </div>
-<!-- Service 2 -->
-<div class="glass-card p-8 rounded-2xl hover:scale-[1.02] transition-transform duration-300 reveal group">
+<div class="glass-card p-6 md:p-8 rounded-2xl hover:scale-[1.02] transition-transform duration-300 reveal group">
 <div class="w-14 h-14 bg-secondary/10 rounded-xl flex items-center justify-center text-secondary mb-6 group-hover:bg-secondary group-hover:text-on-secondary transition-colors">
 <span class="material-symbols-outlined text-3xl">linked_camera</span>
 </div>
 <h3 class="font-headline-md text-headline-md text-on-surface mb-4">LinkedIn Makeover</h3>
 <p class="font-body-md text-body-md text-on-surface-variant">Full profile optimization from headline to keywords for maximum algorithmic reach.</p>
 </div>
-<!-- Service 3 -->
-<div class="glass-card p-8 rounded-2xl hover:scale-[1.02] transition-transform duration-300 reveal group">
+<div class="glass-card p-6 md:p-8 rounded-2xl hover:scale-[1.02] transition-transform duration-300 reveal group">
 <div class="w-14 h-14 bg-secondary/10 rounded-xl flex items-center justify-center text-secondary mb-6 group-hover:bg-secondary group-hover:text-on-secondary transition-colors">
 <span class="material-symbols-outlined text-3xl">brush</span>
 </div>
 <h3 class="font-headline-md text-headline-md text-on-surface mb-4">Portfolio Design</h3>
 <p class="font-body-md text-body-md text-on-surface-variant">Stunning, minimalist digital showcases for designers, developers, and executives.</p>
 </div>
-<!-- Service 4 -->
-<div class="glass-card p-8 rounded-2xl hover:scale-[1.02] transition-transform duration-300 reveal group">
-<div class="w-14 h-14 bg-secondary/10 rounded-xl flex items-center justify-center text-secondary mb-6 group-hover:bg-secondary group-hover:text-on-secondary transition-colors">
-<span class="material-symbols-outlined text-3xl">photo_camera</span>
-</div>
-<h3 class="font-headline-md text-headline-md text-on-surface mb-4">Photoshoot</h3>
-<p class="font-body-md text-body-md text-on-surface-variant">Professional corporate headshots that project authority and modern approachability.</p>
-</div>
-<!-- Service 5 -->
-<div class="glass-card p-8 rounded-2xl hover:scale-[1.02] transition-transform duration-300 reveal group md:col-span-2 lg:col-span-1">
-<div class="w-14 h-14 bg-secondary/10 rounded-xl flex items-center justify-center text-secondary mb-6 group-hover:bg-secondary group-hover:text-on-secondary transition-colors">
-<span class="material-symbols-outlined text-3xl">psychology</span>
-</div>
-<h3 class="font-headline-md text-headline-md text-on-surface mb-4">Career Consultation</h3>
-<p class="font-body-md text-body-md text-on-surface-variant">1-on-1 strategic roadmap sessions to navigate high-stakes career transitions.</p>
-</div>
 </div>
 </div>
 </section>
 <!-- Career Roadmap -->
-<section class="py-section-padding bg-surface-container-lowest overflow-hidden" id="roadmap">
-<div class="max-w-container-max mx-auto px-margin-x">
-<div class="text-center mb-20">
-<h2 class="font-display-sm text-display-sm text-on-surface">The Craveer <span class="text-gradient">Path</span></h2>
+<section class="py-16 md:py-section-padding bg-surface-container-lowest" id="roadmap">
+<div class="max-w-container-max mx-auto px-6 md:px-margin-x">
+<div class="text-center mb-12 md:mb-20">
+<h2 class="font-headline-lg-mobile md:font-display-sm text-headline-lg-mobile md:text-display-sm text-on-surface">The Craveer <span class="text-gradient">Path</span></h2>
 </div>
 <div class="relative">
 <div class="absolute top-1/2 left-0 w-full h-px bg-white/10 hidden md:block"></div>
-<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-gutter">
 <div class="relative reveal z-10 flex flex-col items-center text-center">
 <div class="w-12 h-12 rounded-full bg-secondary text-on-secondary flex items-center justify-center font-bold mb-6 ring-8 ring-surface-container-lowest">1</div>
 <h4 class="font-headline-md text-headline-md text-on-surface mb-2">Discovery</h4>
 <p class="font-body-md text-body-md text-on-surface-variant">Analyzing your goals and unique story.</p>
 </div>
-<div class="relative reveal z-10 flex flex-col items-center text-center [transition-delay:200ms]">
+<div class="relative reveal z-10 flex flex-col items-center text-center">
 <div class="w-12 h-12 rounded-full bg-secondary text-on-secondary flex items-center justify-center font-bold mb-6 ring-8 ring-surface-container-lowest">2</div>
 <h4 class="font-headline-md text-headline-md text-on-surface mb-2">Creation</h4>
 <p class="font-body-md text-body-md text-on-surface-variant">Crafting high-end assets and identity.</p>
 </div>
-<div class="relative reveal z-10 flex flex-col items-center text-center [transition-delay:400ms]">
+<div class="relative reveal z-10 flex flex-col items-center text-center">
 <div class="w-12 h-12 rounded-full bg-secondary text-on-secondary flex items-center justify-center font-bold mb-6 ring-8 ring-surface-container-lowest">3</div>
 <h4 class="font-headline-md text-headline-md text-on-surface mb-2">Optimization</h4>
 <p class="font-body-md text-body-md text-on-surface-variant">Fine-tuning for search and recruiters.</p>
 </div>
-<div class="relative reveal z-10 flex flex-col items-center text-center [transition-delay:600ms]">
+<div class="relative reveal z-10 flex flex-col items-center text-center">
 <div class="w-12 h-12 rounded-full bg-secondary text-on-secondary flex items-center justify-center font-bold mb-6 ring-8 ring-surface-container-lowest">4</div>
 <h4 class="font-headline-md text-headline-md text-on-surface mb-2">Launch</h4>
 <p class="font-body-md text-body-md text-on-surface-variant">Unlock elite career opportunities.</p>
@@ -546,59 +331,52 @@ void main() {
 </div>
 </div>
 </section>
-<!-- Before & After Section -->
-<section class="py-section-padding px-margin-x">
+<!-- Visual Impact Section -->
+<section class="py-16 md:py-section-padding px-6 md:px-margin-x">
 <div class="max-w-container-max mx-auto">
-<div class="text-center mb-16">
-<h2 class="font-display-sm text-display-sm text-on-surface">Visual <span class="text-gradient">Impact</span></h2>
-<p class="font-body-lg text-body-lg text-on-surface-variant">See the transformation of real professional identities.</p>
+<div class="text-center mb-12 md:mb-16">
+<h2 class="font-headline-lg-mobile md:font-display-sm text-headline-lg-mobile md:text-display-sm text-on-surface">Visual <span class="text-gradient">Impact</span></h2>
 </div>
-<div class="grid md:grid-cols-2 gap-stack-lg">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-stack-lg">
 <div class="reveal">
 <div class="glass-card rounded-2xl overflow-hidden group cursor-pointer relative">
 <div class="grid grid-cols-2">
-<div class="p-8 border-r border-white/5">
+<div class="p-6 md:p-8 border-r border-white/5">
 <p class="font-label-caps text-label-caps text-error mb-4">BEFORE</p>
 <div class="space-y-3 opacity-40">
 <div class="h-4 w-3/4 bg-on-surface/20 rounded"></div>
 <div class="h-4 w-full bg-on-surface/20 rounded"></div>
 <div class="h-4 w-1/2 bg-on-surface/20 rounded"></div>
 </div>
-<p class="mt-8 text-on-surface-variant italic font-body-md text-body-md">"Standard, generic CV layout."</p>
+<p class="mt-8 text-on-surface-variant italic font-body-md text-body-md">"Generic CV layout."</p>
 </div>
-<div class="p-8 bg-secondary/5">
+<div class="p-6 md:p-8 bg-secondary/5">
 <p class="font-label-caps text-label-caps text-secondary mb-4">AFTER</p>
 <div class="space-y-3">
 <div class="h-4 w-3/4 bg-secondary/40 rounded"></div>
 <div class="h-4 w-full bg-secondary/40 rounded"></div>
 <div class="h-4 w-1/2 bg-secondary/40 rounded"></div>
 </div>
-<p class="mt-8 text-on-surface font-body-md text-body-md">"Strategic ATS-friendly narrative."</p>
-</div>
-</div>
-<div class="absolute inset-0 bg-secondary/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-<span class="bg-surface px-6 py-2 rounded-full text-label-md">Old CV vs New CV</span>
+<p class="mt-8 text-on-surface font-body-md text-body-md">"Strategic narrative."</p>
 </div>
 </div>
 </div>
-<div class="reveal [transition-delay:200ms]">
+</div>
+<div class="reveal">
 <div class="glass-card rounded-2xl overflow-hidden group cursor-pointer relative">
 <div class="grid grid-cols-2">
-<div class="p-8 border-r border-white/5">
+<div class="p-6 md:p-8 border-r border-white/5">
 <p class="font-label-caps text-label-caps text-error mb-4">BEFORE</p>
-<div class="w-16 h-16 rounded-full bg-on-surface/10 mb-4"></div>
+<div class="w-12 h-12 md:w-16 md:h-16 rounded-full bg-on-surface/10 mb-4"></div>
 <div class="h-3 w-1/2 bg-on-surface/10 rounded"></div>
 </div>
-<div class="p-8 bg-secondary/5">
+<div class="p-6 md:p-8 bg-secondary/5">
 <p class="font-label-caps text-label-caps text-secondary mb-4">AFTER</p>
-<div class="w-16 h-16 rounded-full bg-secondary/20 mb-4 flex items-center justify-center">
+<div class="w-12 h-12 md:w-16 md:h-16 rounded-full bg-secondary/20 mb-4 flex items-center justify-center">
 <span class="material-symbols-outlined text-secondary">verified</span>
 </div>
 <div class="h-3 w-3/4 bg-secondary/30 rounded"></div>
 </div>
-</div>
-<div class="absolute inset-0 bg-secondary/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-<span class="bg-surface px-6 py-2 rounded-full text-label-md">Basic vs Optimized LinkedIn</span>
 </div>
 </div>
 </div>
@@ -606,78 +384,37 @@ void main() {
 </div>
 </section>
 <!-- Pricing Section -->
-<section class="py-section-padding bg-surface-container" id="pricing">
-<div class="max-w-container-max mx-auto px-margin-x">
-<div class="text-center mb-16">
-<h2 class="font-display-sm text-display-sm text-on-surface">Investment in <span class="text-gradient">Growth</span></h2>
+<section class="py-16 md:py-section-padding bg-surface-container" id="pricing">
+<div class="max-w-container-max mx-auto px-6 md:px-margin-x">
+<div class="text-center mb-12 md:mb-16">
+<h2 class="font-headline-lg-mobile md:font-display-sm text-headline-lg-mobile md:text-display-sm text-on-surface">Investment in <span class="text-gradient">Growth</span></h2>
 </div>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
-<!-- Tier 1 -->
-<div class="glass-card p-10 rounded-2xl flex flex-col reveal">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-gutter">
+<div class="glass-card p-8 md:p-10 rounded-2xl flex flex-col reveal">
 <p class="font-label-caps text-label-caps text-on-surface-variant mb-4">STARTER</p>
-<h4 class="font-display-sm text-display-sm text-on-surface mb-6">$299</h4>
+<h4 class="font-headline-md md:font-display-sm text-headline-md md:text-display-sm text-on-surface mb-6">$299</h4>
 <ul class="space-y-4 mb-10 flex-grow">
-<li class="flex items-center gap-3 text-on-surface-variant font-body-md text-body-md">
-<span class="material-symbols-outlined text-secondary text-sm">check_circle</span>
-                                ATS-Friendly CV
-                            </li>
-<li class="flex items-center gap-3 text-on-surface-variant font-body-md text-body-md">
-<span class="material-symbols-outlined text-secondary text-sm">check_circle</span>
-                                Cover Letter Template
-                            </li>
-<li class="flex items-center gap-3 text-on-surface-variant font-body-md text-body-md">
-<span class="material-symbols-outlined text-secondary text-sm">check_circle</span>
-                                1 Review Session
-                            </li>
+<li class="flex items-center gap-3 text-on-surface-variant font-body-md text-body-md"><span class="material-symbols-outlined text-secondary text-sm">check_circle</span> ATS-Friendly CV</li>
+<li class="flex items-center gap-3 text-on-surface-variant font-body-md text-body-md"><span class="material-symbols-outlined text-secondary text-sm">check_circle</span> Cover Letter</li>
 </ul>
 <button class="w-full py-4 rounded-xl border border-white/10 hover:bg-white/5 transition-all text-label-md">Select Plan</button>
 </div>
-<!-- Tier 2 (Highlighted) -->
-<div class="bg-secondary-container p-10 rounded-2xl flex flex-col relative reveal overflow-hidden">
-<div class="absolute top-4 right-4 bg-secondary text-on-secondary px-3 py-1 rounded-full text-[10px] font-bold">MOST POPULAR</div>
+<div class="bg-secondary-container p-8 md:p-10 rounded-2xl flex flex-col relative reveal overflow-hidden order-first lg:order-none">
+<div class="absolute top-4 right-4 bg-secondary text-on-secondary px-3 py-1 rounded-full text-[10px] font-bold uppercase">Popular</div>
 <p class="font-label-caps text-label-caps text-on-secondary-container mb-4 opacity-80">PROFESSIONAL</p>
-<h4 class="font-display-sm text-display-sm text-on-secondary-container mb-6">$599</h4>
+<h4 class="font-headline-md md:font-display-sm text-headline-md md:text-display-sm text-on-secondary-container mb-6">$599</h4>
 <ul class="space-y-4 mb-10 flex-grow">
-<li class="flex items-center gap-3 text-on-secondary-container font-body-md text-body-md">
-<span class="material-symbols-outlined text-on-secondary-container">check_circle</span>
-                                Everything in Starter
-                            </li>
-<li class="flex items-center gap-3 text-on-secondary-container font-body-md text-body-md">
-<span class="material-symbols-outlined text-on-secondary-container">check_circle</span>
-                                LinkedIn Optimization
-                            </li>
-<li class="flex items-center gap-3 text-on-secondary-container font-body-md text-body-md">
-<span class="material-symbols-outlined text-on-secondary-container">check_circle</span>
-                                Professional Photoshoot
-                            </li>
-<li class="flex items-center gap-3 text-on-secondary-container font-body-md text-body-md">
-<span class="material-symbols-outlined text-on-secondary-container">check_circle</span>
-                                Career Strategy Call
-                            </li>
+<li class="flex items-center gap-3 text-on-secondary-container font-body-md text-body-md"><span class="material-symbols-outlined text-on-secondary-container">check_circle</span> LinkedIn Optimization</li>
+<li class="flex items-center gap-3 text-on-secondary-container font-body-md text-body-md"><span class="material-symbols-outlined text-on-secondary-container">check_circle</span> Strategy Call</li>
 </ul>
 <button class="w-full py-4 rounded-xl bg-on-secondary-container text-secondary-container font-bold hover:scale-105 transition-all text-label-md">Get Started Now</button>
 </div>
-<!-- Tier 3 -->
-<div class="glass-card p-10 rounded-2xl flex flex-col reveal">
+<div class="glass-card p-8 md:p-10 rounded-2xl flex flex-col reveal">
 <p class="font-label-caps text-label-caps text-on-surface-variant mb-4">EXECUTIVE</p>
-<h4 class="font-display-sm text-display-sm text-on-surface mb-6">$1,299</h4>
+<h4 class="font-headline-md md:font-display-sm text-headline-md md:text-display-sm text-on-surface mb-6">$1,299</h4>
 <ul class="space-y-4 mb-10 flex-grow">
-<li class="flex items-center gap-3 text-on-surface-variant font-body-md text-body-md">
-<span class="material-symbols-outlined text-secondary text-sm">check_circle</span>
-                                Everything in Professional
-                            </li>
-<li class="flex items-center gap-3 text-on-surface-variant font-body-md text-body-md">
-<span class="material-symbols-outlined text-secondary text-sm">check_circle</span>
-                                Custom Portfolio Website
-                            </li>
-<li class="flex items-center gap-3 text-on-surface-variant font-body-md text-body-md">
-<span class="material-symbols-outlined text-secondary text-sm">check_circle</span>
-                                Bio &amp; Press Kit
-                            </li>
-<li class="flex items-center gap-3 text-on-surface-variant font-body-md text-body-md">
-<span class="material-symbols-outlined text-secondary text-sm">check_circle</span>
-                                Lifetime Updates
-                            </li>
+<li class="flex items-center gap-3 text-on-surface-variant font-body-md text-body-md"><span class="material-symbols-outlined text-secondary text-sm">check_circle</span> Custom Portfolio</li>
+<li class="flex items-center gap-3 text-on-surface-variant font-body-md text-body-md"><span class="material-symbols-outlined text-secondary text-sm">check_circle</span> Press Kit</li>
 </ul>
 <button class="w-full py-4 rounded-xl border border-white/10 hover:bg-white/5 transition-all text-label-md">Select Plan</button>
 </div>
@@ -685,138 +422,58 @@ void main() {
 </div>
 </section>
 <!-- Final CTA Section -->
-<section class="py-section-padding relative overflow-hidden">
-<!-- STITCH_SHADER_START:ANIMATION_2 class="absolute inset-0 w-full h-full opacity-30" -->
-<div class="absolute inset-0 w-full h-full opacity-30" style="display:block;">
-<canvas id="shader-canvas-ANIMATION_2" style="display:block;width:100%;height:100%"></canvas>
-<script>
-(function() {
-  const canvas = document.getElementById('shader-canvas-ANIMATION_2');
-
-  // Sync the WebGL drawing-buffer size with the CSS-driven layout size.
-  // This fires on initial layout and whenever the element is resized.
-  function syncSize() {
-    const w = canvas.clientWidth  || 1280;
-    const h = canvas.clientHeight || 720;
-    if (canvas.width !== w || canvas.height !== h) {
-      canvas.width  = w;
-      canvas.height = h;
-    }
-  }
-  if (typeof ResizeObserver !== 'undefined') {
-    new ResizeObserver(syncSize).observe(canvas);
-  }
-  syncSize();
-
-  const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-  if (!gl) return;
-  const vs = `attribute vec2 a_position;
-varying vec2 v_texCoord;
-void main() {
-  v_texCoord = a_position * 0.5 + 0.5;
-  gl_Position = vec4(a_position, 0.0, 1.0);
-}`;
-  const fs = `precision highp float;
-uniform float u_time;
-uniform vec2 u_resolution;
-
-varying vec2 v_texCoord;
-
-void main() {
-    vec2 uv = v_texCoord;
-    
-    // Subtle moving diagonal lines representing "pathways"
-    float line = sin((uv.x + uv.y) * 10.0 + u_time * 0.5) * 0.5 + 0.5;
-    line = smoothstep(0.48, 0.5, line) - smoothstep(0.5, 0.52, line);
-    
-    // Dark navy base
-    vec3 color = vec3(0.043, 0.067, 0.125); // #0B1120
-    
-    // Electric blue glow for the lines
-    vec3 blue = vec3(0.231, 0.510, 0.965); // #3B82F6
-    color += blue * line * 0.15;
-    
-    // Ambient bottom-to-top gradient for growth feel
-    color += blue * (uv.y * 0.05);
-    
-    gl_FragColor = vec4(color, 1.0);
-}`;
-  function cs(type, src) {
-    const s = gl.createShader(type);
-    gl.shaderSource(s, src);
-    gl.compileShader(s);
-    return s;
-  }
-  const prog = gl.createProgram();
-  gl.attachShader(prog, cs(gl.VERTEX_SHADER, vs));
-  gl.attachShader(prog, cs(gl.FRAGMENT_SHADER, fs));
-  gl.linkProgram(prog);
-  gl.useProgram(prog);
-  const buf = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
-  const pos = gl.getAttribLocation(prog, 'a_position');
-  gl.enableVertexAttribArray(pos);
-  gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
-  const uTime = gl.getUniformLocation(prog, 'u_time');
-  const uRes = gl.getUniformLocation(prog, 'u_resolution');
-  const uMouse = gl.getUniformLocation(prog, 'u_mouse');
-
-  // u_mouse is in pixel coordinates matching u_resolution (ShaderToy convention).
-  // Shaders that need normalized coords should use: u_mouse / u_resolution.
-  let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
-  window.addEventListener('mousemove', (event) => {
-    const rect = canvas.getBoundingClientRect();
-    if (rect.width && rect.height) {
-      const nx = (event.clientX - rect.left) / rect.width;
-      const ny = 1.0 - (event.clientY - rect.top) / rect.height;
-      mouse.x = nx * canvas.width;
-      mouse.y = ny * canvas.height;
-    }
-  });
-
-  function render(t) {
-    if (typeof ResizeObserver === 'undefined') syncSize();
-    gl.viewport(0, 0, canvas.width, canvas.height);
-    if (uTime) gl.uniform1f(uTime, t * 0.001);
-    if (uRes) gl.uniform2f(uRes, canvas.width, canvas.height);
-    if (uMouse) gl.uniform2f(uMouse, mouse.x, mouse.y);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-    requestAnimationFrame(render);
-  }
-  render(0);
-})();
-</script>
-</div>
-<!-- STITCH_SHADER_END:ANIMATION_2 -->
-<div class="relative z-10 max-w-container-max mx-auto px-margin-x text-center space-y-stack-lg reveal">
-<h2 class="font-display-sm text-display-sm text-on-surface max-w-3xl mx-auto">Ready to Build Your Professional Identity?</h2>
-<p class="font-headline-md text-headline-md text-secondary tracking-wide">Crave the career, we'll build the path.</p>
-<div class="pt-8">
-<button class="bg-secondary-container text-on-secondary-container px-12 py-5 rounded-full font-headline-md text-headline-md hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-secondary/20">
+<section class="py-16 md:py-section-padding relative overflow-hidden">
+<div class="relative z-10 max-w-container-max mx-auto px-6 md:px-margin-x text-center space-y-6 md:space-y-stack-lg reveal">
+<h2 class="font-headline-lg-mobile md:font-display-sm text-headline-lg-mobile md:text-display-sm text-on-surface max-w-3xl mx-auto">Ready to Build Your Professional Identity?</h2>
+<p class="font-body-lg md:font-headline-md text-body-lg md:text-headline-md text-secondary tracking-wide">Crave the career, we'll build the path.</p>
+<div class="pt-4 md:pt-8">
+<button class="w-full sm:w-auto bg-secondary-container text-on-secondary-container px-12 py-5 rounded-full font-headline-md text-headline-md hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-secondary/20">
                         Secure Your Spot
                     </button>
 </div>
 </div>
 </section>
 </main>
-<!-- Footer -->
-<footer class="bg-surface-dim border-t border-white/5 py-stack-lg px-margin-x w-full">
-<div class="max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+<footer class="bg-surface-dim border-t border-white/5 py-12 px-6 md:px-margin-x w-full">
+<div class="max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
 <div class="flex items-center gap-2">
-<img alt="Craveer Logo" class="h-6 w-auto grayscale brightness-150" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAAB4CAYAAADc36SXAAAQAElEQVR4AexdCZwlRXmverPsHAhEPJaVoBgPFFBIlsPdRcGDQASCAkHFE8wPXEFQI4ciu2+XBW/xJBJCUEFl8YiRmICgonsiLnIZUUERdJFbjp0951X+/zfTM/26u46e1+91v5lvfvVNXV99VfXv1/XV3TUlf4KAICAICAKCwCQQEAUyCdAkiSAgCAgCgoBSokDkVyAIlIWA5CsI9DgCokB6/AFK8QUBQUAQKAsBUSBlIS/5CgKCgCDQ4wj0sALpceSl+IKAICAI9DgCokB6/AFK8QUBQUAQKAsBUSBlIS/5CgI9jIAUXRAgAqJAiIKQICAICAKCQG4ERIHkhkwSCAKCgCAgCBCBwhTI/CXDJk4ULmRBQIIFAUFAEJgCCBSmQKYAFlIFQUAQEAQEgRwIiALJAZawCgKCQM8jIBUoEAFRIAWCKaIEAUFAEJhOCIgCmU5PW+oqCAgCgkCBCFRagcyrb9qTVGB9RVSbCEhyQUAQEAQiBCqpQOYvGn72vCXDd+rayG2k+UuG72BYVGixBQFBQBAQBMpHoHIKZP/zzCzTZ36mlXpeDJ7dGLbv0uFdYmHiFAQEAUFgGiFQvaoWpkBWLhzScZpsVWds3XCxVnpWMj3DZjbMVQfVzUAyTvyCgCAgCAgC3UegMAVSRNHnnLd+ttLqCLssvdeW2oZL7PESIwgIAoKAINAtBCqlQAa39A0GVPy4+YuH3xfAJyyCQBwBcQsCgkDBCFRKgayoD/zOGHO7t45afXq/+sYXevmEQRAQBAQBQaBjCFRKgbCWDVM7QhnzEN0umlEb+ZQrXuIEAUFAEBAEOotAsALpbDEmpK+pD96tdO0ohIyArAaL6ofPX7zxYCuDRAgCgoAgIAh0FIHKKRDWduXCweVGqTPodpFRjQtV3VSyDq5yS5wgIAgIAlMBgco2vqsWDn0aSmS5C2St1fPn6uEFLh6JEwR6HwGpgSBQTQQKUyDzc3wPZF79iWeSfJDU1Iz3QInAKOtfTeszsWairQwSIQgIAoKAINARBApTIGGlM3rukuHjVG3GuaSmWxlr479i4cxblDIXe2TvMnfp8JEeHokWBAQBQUAQKBiBriqQueduPlIrfWBUB7pfVh92HBxUargxdCb4nwBZjW7oU6yRSkmUICAICAKCQAcQ6JoCmVNfN6QajUOTddC69tr965t2T4ZH/pvr+i8Npc6P/Fk21kJePbe+6UVZcRImCAgCgoAg0BkEuqZABgZn96Gh18lqMKxPj5ywq+OOq75tBi9Cuk0gq9G1kfdYIyVCEBAEykFAcp3SCHRNgaw8U3MaanUmmlpv9yy14fDMOASu+KB+1CjzDTgdxrzZESlRgoAgIAgIAgUj0DUFwnKvWjjwFaX0r1XWn9avmld/4plZUc2wxjafbdqWf1rpHeYvGj7AEi3BgoAgIAgIAgUj0FUFopQ2Tw72YzpKP6mSf1r1Kb3N0cryt6o+82ajVPYIZiyNqSnrKGaMpfKWMWZn0AGgNxhjzoD9cVAd9F7QO0CHVL4SUkBBQBCYFggUpkDi3wKh24berafr9Uara7PiMU211971R/8qK45hWqmv07aR1qbnFAgUwstB54C+D3oEdfsjiAcor4D9MdDpoEWgC0CXgq4G3zDoWtCHQLsiTIwgIAgIAl1HoDAFkqfkDz7Q/2Moi+FkGi6oD+nB+cnwyN9o1K6O3Nm23mPu0uGds+OqFYqG/22gO1Gqn4KWgF4LeiooxAyC6TWg80B3QM5loD3gFiMICAIFISBi/AiUokDu/LzepEwfG850Cc3IPGU5XLi6PnCnMuqedKJYyIh5XcxXOSca+leDfoaCYT1IPQ92u6YfAt4Cuh1yvwxbjCAgCAgCXUGgFAXCmm02m5bTTlGt9vR5Szc+OxU+EXDVhDPt0kpbRzBp7u6GoIH/KHLk9N2+sDth3o48fgF6TieEi0xBQBAQBOIIlKZA1ta3fwgNHadw4uVpus2Ith4KbNSMcxpLK1PJqRzUlWsaPFWvm5Xs3L+9IfrnyG8/2OUZyVkQEASmPAKlKRAia0zjF7QzyKpA1MjQqgz+iSCtd1MVuuLdGLODMWYFCvgGULfM05HRMuS7I2wxgoAgIAh0BIFyFYiq3ZFdq8YLbEpgdV0/opR5MDtdM7R/P7Xp+U1XNf79O4pRxrQad2d9FXmLEQQEgemFQNdqW6oCuaE+9Ef0ktcna6u13maO2fDXyfDIb4z+VeTOsvt0oxLTWKjbySjfMaA85l4wXwT6IOitoONBHwd9E5Q55YdwmzkMZaAcW7yECwKCgCAwaQQKUyB5vgfSWtraH1r9o77+vhmzRl3p/1q5FQgUUOkKBA031yA+mS69NeSHiDkUZX826F2gj4IuB30ZdCboWNALwPMhUErpIsxmeMbEfsLflkrCBQFBQBDwIFCYAvHkY43WunF/VqTRDasCMdr8X1aaibDGLhPu0lxUHgMBuW8EzzFQDq8BXQO304DnI2B4KWgNKMTwzMhJIYzCM4qA/BcEBIEwBEpXICNGZyoQ1TBWBaK14mltew2N3sEe2fkYjD7mIZeXg3yGNwxTeXzbxxiP11r/Dv7DQNn3iiEiYd6JMpX+rBNlEq8gIAj0OAKlNyq6tvXPWRhqZaxXmoyo2uNZaSbC7GkneDrqOiNQ+iIog+8H8rawId0jCKASycQPcXHDcyFHxwPELQgIAoJAuwgUr0BylqhvpPZYZpKatk7/1MxIdpoxQVgjKW0Egp4+P4515FhRXNYaKAHedeXiccYh/V1gOBcUYg5OMqGsrwS9zkEtJ+XBtyPos6Bfg9aDHgStBF0Cem1SftIPnheBFoO+CroGxPMqv4f9GIjmSfy7H8Sw22D/EPQBkHU0yjwQPwfkqgfj5pB3sgT5s0GU46JXhMiHnGeATgNdByKWxBFOQ0z/BMcvQbwb7WTYHVm/gtxXgS4C3QS6B/QEiOZh/LsLdCPoc6CDQuqU5EG6vUAurLhGOJ4MvDXQqSCW5xHYxIJubkc/Ef6Z48ziqAwCpSuQLZtGOI2TBsQoqwLZ2uhzKhCjlHX0ojr/d1xgFosD+XxsvGCR31qJ8zXg4U41xp0A985QNifCThpe0PifCLTREYhrGrzA3IrMKbNTEfBC0BCI5004Xcc82ODdAr5/QniLQdg+oBsQyDIthM3dZX8Pm406txtvDzfNtvjHBpNhe8L9KtAnQH9Geja2NiW1P3hsdYjCl4GnHcNLLSNZNtu54w512BXEcjyAgnwG9GoQsSSOcCpi+iw42AlhXb8ANxUqseUBUXjbM8j/JBCnQLlpg7+Jv4VErhk+BTYNzw79DRz7gPiRth+D/15Q3t18XHez4cTw8VE6ZM9GXmtB/GQDy8M74YgF3ccinLsS2an4MNxiKoRA6Qpk447bcRE5BYlR9hGIUf3OKSytTWkjEFSEDSosp7kbDbrzRL0zdSwScjbAy49t3Qb7YtDbQLMRvjvoBNCloHUIm7TBC86e9f9AQNTQwZlpuLhPGo9EWjYUNyKgpccJf17DxpYN6dchkw1OPP1/wJNUoghqMc9DOspoCczhSSnGRFoDPxs6WGmDvHnx5e2IYYMIK5ehMuEVNRy5UcHaElvDkf9+ICrxL4HpuaA8hlvqz0d6jkwKnQqFTCpMKjOfgiQfOxR5yi28HUagdAWy43plGYE0uHsos/oztlfuEUhJi+h4GWagwOwNw3Karzljc0ZCQZwEeinoRNBlIPZwc0rJZkeduHX4e4iNRglwWg0b0UuiWKRlD/Zjkb8g+02QswKynwa7aVBfdkJ4VUzT7/jHSycd0dlRyIufCWAjms0wGroC5fjlqHPiP9JuD2IDye3XHGFNROZ3ceR2PeSxMQ1ODf7Xg/nHoHaVOEcm34Q8jkIhrj0DOZyW4hrgiwMlfSuQT9i6hEBhCoTfAIlTaPmv/6Vio5Ni11jISAWOBTz2uBoZc9osNuS2uE6Gs6fOobcvD+92XZ+AguIzsY/J5gvO6YbQEd2NWuu7mR6NA6cwOE1Db9EUNWTx3y971r58jkK5WCcfXzKeDXcyLOnn7cotYciLDT2vsSmy58zGltNKnOZryS/LgzKwsf8O4kJ+l2DzGg0OroP5prR8vy3Gc8TsG3kgu6ZhR/Pypkv+VQaB+AtYSqHm7HEfryNP5W2MZWQCTgxNnL1hrYxzigsiMk0BgQcGyOD6xE0BfN1gYWPgyudfEJnnUGZzOzIaLV4l83mk7eTv65WQP96wQ3ERU9/ZGP5uOIJB0jCDujANRyCuBI8iMutjZ5xafAniijZcN/kWyubEF/H8Zsyni858TB6ntI4ac2dZvt8Wt7lzujUrbVbYD/CMy3qvs8ojYUDA+QNEfMfN5o1DmQoE4xL2ODLz7+vbuF1mRBSotW8+POIs2rZfAjmR0x/wIuQ5ST6RsvuuPPPtHBVGPURO12wTWFxOt7Hx/w34HwLlMcn5+JDvoeRSICgMp718vfcr8Ey5FgX2UYPGmx8J44h0NMD/n3VPTYE5knEDwkJbPPLnOtFliO8DhRpucnDdM5eUcyHyeUYyMNDv3FmXIYNX+WQES1CZCJSuQIa22yFzSgEvJOe1M7GZafrYK8yMGw0sbQTC3SOjRbD/b2tB2y629Jif4JmtQ4PC0Qfv7/IV6F/BsCvSzALNAe0GYmPE6bLTENecCoPtMn+XiOQ00l8SYUkvP+jFxjUZbvP7FA6nYr4YTwwMuP35nHiYw3024p7LuoP2BLHnfgjCqFRhOc1ZyCuJQZRgKRw7gXyG+byS+YK48YKdBi6yL/IlRDyVAHeKwdmucabnyEPWP5wQlRNZugIxWzaxwUjV3mhjHYGYka3uEYgpbQQSsn34yVRleyOAIwxOybBx424szsFzK+6VY8WPeohsEMeCMi3KOR6N1btBqXvQEPY46HNIyV1PW2G7zM5oQDGjOcqCdOx0+BbTuT72jtEU7v+Qzakibl92MfI8T3LkwC2/rjSMexj/ePfZ+Sh3i7KEn9M1HGFwGhBsVsPRewpvlJsfZAvZTn4l8qLyvj6eA8K4S5AjKO4o5OWe8eik+1jkt1cycBJ+fmCOz5wdEP6+DoAMfoCNz/S/UaaWER7ixFQAgdIViJ7RYI8nBYVRNXtPckbNNwIpaworRIGUVbYUxjkDTsFLfByIjdvDsDkVdy1sfueEioTnGyiyhn/crgor03wLabxTTeD5OVI7vz6JeBruEqMdERtdjgoif5YdupWWioYjgiwZURhHPZFboTHl6GZ8bWY8Iu3gFmvnZgpgwAXwlemkLSGHIM9kJ+wD4BgAuQw3PPDZWXmQ/2pE/jPIZ0Lq65KxDHm9AsTfxl2w+ftaCZsL9dwWzvMhrvQSVxICfNlLyno0274RxWHwqCf2Hz8e6xUdDTPi3FJplOaQNyata84QBdKJEUinK/hdPA/rLifEUZFwIVnB/XYQF47ZO2YP9hQUjrtt+CEwXr/CzCTDMQAAEABJREFUg4EICjIh19ePb+elROTNizaZF7022tsYw4bJFh+FOxtYMLHOyW+uvBHhvjWTa1BObo0Gq9dwKzRHbTZGbg1OjjaS/mRagwAqJ1hug3L+ABzciQfLapwHKK2pRiPugWVVUsj/t6CfgUdMBREoXYEoZTJHINqMZF+yCBC10s6dQVor37AbUjpi+DL7BIcuLvvkdDP+wryZaa03g1aDvgji+ZT5sJ8G4onjUHFsXHy8WT3tllGBRYC10SI/FAx3MHG7ML02Yo85ObXC3UU2/ig8qXSi8JQNvPjVTh9m49uEUW5OJ7Uo1ZRQpW6HXN+OtXgyX3mfg3yd72RcWMLNTxb0YqcqUY3p6S1MgUz+eyCaC44p9LdqbR2BKKPcP1ajXVMoqbwKDAh5EaIrIwrMtqOiOKVwbUdzSAhHY8R7pxYgmFNIsJwmq7fP3Uf2KdBRcZy7d/3+Q6ZlskZlITuvrhstQvD/5BpLMiGvfYnCqPgit82+2RZhCedNApao8eB9x13hjgZY/w3U22Yal971AnUcljnnrZ+NOY/0grhRI0MjA9ZRhNaGdwVZy7dVN8pSIL5Gi2UOGaWQryrE6y86WhYojJeCeJHeV2Dfisy4U42jHi4kw+s0qd8wetdceM06lxEXxKnT8bu+4hEoAxfmXxcPy3BzDYE7mMajkI53N/l6/+tQvgfGE4U5iImL84XIm2UmT8gIqKXcTOQilPdPiOczgWU1oQcC4wK4jpbaSBFnEHe1EUi9fN0sbn+jxlO1GVmau66v68wdOHPqBj1OPTsj0XjQYGPolnFPdx3OK1bGioLyj7l6w/L1fnPXAo0dpzwWwP4aiB0FPi8ulPJgGddP8shkLzaLn1trOdefFReFvTlyJGyuIXg2aqisaTJnx2Ysj62o8wV5COm4lgTLavgev2ws1jftRra5efInLxLZcEZU08RHQc2AgH88dxLAJixVRYA/vNLKZhrG0sM0d9gKNbNveHy+N4sHLcZvbconi7/gsJARCK+3KDjbjopzf7wrMGs0Qm8FXQb6PZJw2ypHGMcppZwbIsDrM5kNG3rNXEz37WA6DOXJUhS+sx/cSZelQLJkJcvPLbbvRWAe4vZWJHEafvOFDOkRPUNbibvQ8uRPXt9z2rk1iyDffUFcwlRZBEpTIPt98HEuqHLPdxqcWp9VgehGjTeTptOMhWijypq+Ygm4K4e2i3ildy9NY/mmLqx1RePMqZUrYHNtiAuxPNXN8yPWNJOIcO1Q4nX2LpEcDbJM4zwoKxti3zcwuHjOOo2nG3OEKJAx1sKtaG0tsgvPwCOQWHpYUtH2dc4UqwRUEYHSFEjfQH/mYqMx+rFV5/TzewWZeGllnB9rMlrx8rrMtF0I5PcyQrLxTUmEyBjnQaO3B4jrB9xCOh5ekINXbOQWhfKcjEQ8y8GtsJ1UmFYFglEIr3nn1mEUxWpYvngkF+5913/YFn4n04jG827HHSmOaC2kHVmTSTuZuod0uCZTFkkTiEC7bKUokIPqZkCrkQOzCo8pqOVKYRyh0n/71zftrrRyTgGZRh+/W5FO3J2QHwVm0853KbKyYC+a6wffQMPNr/rxuxmnwM2F4iz+PGGcrsnDr5Av78LiFRch0ylJ2ZwX5y2+nLYJOdFtVSBjgn1X589HeeNbyZ0dFMi8CYrJtgV2C+LLMpGSLqsMUf556t8rd8LlqdO04i1FgWzq23yo0jrVUzKGbU//T2xPoFYbcU5fKaPWra73W6e/bHILDF8BWSEL6b4dPhCTy8RvReWLTJx4IpufR12DBrIOsmxY8OaT61Am8vlHSOTHk2AFmWFwXQ9aDNoDjTPvY3ofbN59lDVNBLYW41MgXGtpSZDwcLRBZcUfHy/D5E6qBEuLl1NxLQExT8gaWIy9UOdTxqTlel5jaYqwUu9zgFBRIAEgVZmlMAUS/xYI3bZK71t/cifdaPDqixQLGo1bb6jbT5HXjHFf0qcVv3uQktutAJSfO8d4/YMvy93Q0NouwfOlbYmHHO6+4Z1NLeFjHjaO/MDVIvh5NgJWbsMGPk+ikOvDuc2WDfHBwGxbEC/zq8Pmwnc8r5BDl5mL6JEQyGSHggoqCsqyo+28vrMfT0Aed4uNykj/D1EgvH8KYgo37xsrTogCoZIuvABj+eexrPfd5REivOUhUJgCCauC0TN03/FKKzZsKvmnG/3fTYZF/nlLhucqrXeP/Fl2Q9f4dbOsqG6GRZcL+vJMXYLnS2CJ5/SVJaol2IptC1faEzwlAmV2LJJnHgxFeGQ4qjgQrRevPPEdqAuZV8esZyTaavsW06Pp1EiR2AT5rvS4y5YwFm5T9jGWtpzcFu0TEHKNi09GEfG+0WMReYiMDiLQVQUy99zNR2qtMnfhoBW4YWVdW3f8YFWEi7LK9meM2rz5mf38dKiNpVvh3N4Z8hLz63ghp4at5UaDzU+UnmBlmIjgi+o7WDfBHXNprTfHvD7nP/gYEH8yZIbebcRbWZHEaTjqczIgP452XJsBBoDl+yHEdwbFtniOpE3DE9scXTU9ln+dViA8U2PJejzY2REb5+q8g7/LzuciOXQMga4pkDn1dUOq0Th0oiYxl1EjGxoD1umnAz5ingru5G4ZBE0Yrc0Va0/Swb3liZTFutBYcUqF37oIEXwxGi7Ou4fwtvAgHQ+McVQRMvfMK8etO9taBLd6WJfWELcveTNukpsL8r7r1uNpMjsbcQa4eT07LK/xTeF92CPhVjzblS4exFOZJafhkkmG8OxCR43NtODnhoi3wA4ZOYScMk9+iKuZj+0f8p0Dej/oYBDfRRtr3nDilTeN8FcIga4pkIHB2X1aK51Vd/woL7+5rq3zx2bLxgVI6WwoTGObC7JklxGmtf4I8g3ZosgGcjnqfxD4gw34eWEep+ucJ/JjAr8Yc+dx5v19+BTIJmATNKJBHXmmIgSXzA+SZVSSGLgUoq9h9CmgKMuQUfAS1M/5e46EgY8dBa67MP9b4Ocuu5thLwPVQceA4tOGvCI+ecFjJC6yue37pMgTYPPTxp8CH2/mfRj53Qu6DvQF0LtBB4BCOjIQ0WKCMGhJIZ5KIZC3gZh04Veeqdn7TC0wN7S5ZnV9yHr99t5181dKmbNcGRullq+qz7zZxVNCHLeyhmTLaZpr8QJ+BuR8CRG/PYiNCaeAQkcu3HbKD0GFlKVdHp9yeDrKHzp9wi/qERtfmfp9DIyH4uL6hG8xnaxZxAaZZ0qy4pJhFyMAP0n8txt+8S/oOnWI4Cnw+HvKXXbsQHC9aRHi+SGv8a3rqCcX0f8L4U6DyA/jWcyE7TTg4Rbn18eYNNw8lc6t6JxWpmJejrB2rnRHcjG9iED8h9nx8q9aOPCVRmPkm6Zh0NDojcaoK9ecM2SdumKBtq1tOBe2+zyBUWxUwVYdgxeZN7WGrjuwJ3YaSn8PXthLQUeDmttJYe8HOg3EHih3FLHh8b74kBWZ0yNHF2ye4fBlwzMeTh7Ulb1jfkfEyTcWGaRAxnh9i+ljbCmL30PxHUhsJsJz/y0cK0E+sxT19F0pz6kuYuGTVU8wcB0uEZTyUgn8CGWwXkGCuB2Risoo68p8RI2b21Bv/j7HA8QxPRDoqgJRSps19adct/7Jx88yj/aftXrRoHO4P+/cjRyaL1COPyihP65aOOhUQo7knY5i2dmghObDHjdPQvMMxE14gdmTvQGJ2eiyMQmdskKSpvkSXuzQw43NBG3+uy0gPefRqSSTX9HjOYxdUGcqXSpf9nQDxCk2ciF85OH6i2sxnTxZdElWoCNssSMuiuJok2tgX0Wd94kCacN/OOh/4Waj7OssrMUzbhlhwn810oY8d36udy3yehPoGUjTNHDzsstz4OFFmtwmDqfThNTXKUAiexOBwhRInu+B3PrJndavvkBzWsCJmm6M8DBc5pbfKKFR5qMKK+iRvyt2YCZ4kTmdwOtFJtNoBeZiZVuF/KnArAwdiAjZAcRsqSR/hYbqKtCFoMtB7ExwhOW7yJDp48S7q+J+qxt4cNGWO7KsPBkRv0E6li0jKjsI/NyezKmdbIbWUJ49uRH1p7kV/3i47iqwZG84QUTCcISeCGp6T8R/yoLlNLytgEr7AeS9DsTreHjZ5RKk2gnkMz9Hfb/tY5L4qYlAYQqkaHjmL97wTigG57ZQjD7uXG2GQnc8FV3EIHl4uW4CI7/RkGckgiRtGY4E4vPWbQkLTYy6snH+TSA/R1OHg5dKjteq85blkHMfSNJiOEptCfB4eDLdtZieTD7Zaa8PQFDeNRduI86DwVJgzikmZNVqEM41H15Ln+ewHp9Jnm3G3HbPZ9eaufimDQKVVCBz68PzMNt1ke8pNGq1Baqu8zQGqow/vMzsWXO6IGRuvN0iUnnwZHfejxa1m2+UvugGhde/R7Kz7MxLObMYGYZnwYY1ZHqH7FirU76zH+RLEfLheRAqyE49cyoPTjOl8o4CUAZ+d51Tn53Y3k7lwd9ZaIchKla7tqSvEAKVUyD7n2dm1bRhr8o5dQUMv7fmnAFOFcBZfYOX+UHQASgpT6BzRxqchRuOAPhSP1y45ECBqCNv4GXvOzCFlY0n1o9E7CdBLjML0y68rsXFk4wL3VEVvHiezIB+YMEppIPh5lRskYfmvMoDeTYNysD1NO6Y8iniJn/gP1EegUBNdbbKKZAZWzdcjKkrLiY7sdeNWnT3j5OvapF4oc9HmfYAXQkqyvB22AMgm9eDlKY8osqgHDwzcGbkn4S9FmmoCNmDDplfzzvqWQb5bARhOU2oorEKARYbQNw5dwiYuLYAa9LmHqQ8CfKcIw/wtBjwLwfxPAlvSG6Jm4SH2L0C8mTkMQnwplqSSimQ0W+kK999RAprH6euqA9M5mR1JZ4fXr57QTxZz2mtT6BQPAfDKQ84cxmeAeDLPBfygqZKcklvgxnl+TiSzwPx/qjQeXgqwqORdh8QRzLoS+j7IcO3iP12jEJ48BCsfgPZnPb0XfN+N/h4KM8vMIADsn4I4vkPbtfmIVBusAhI2WThtNu7kP45oElNqVEK0r4HNp8JR0TcYQVvsOHo9sWQ8UYQyxOcUBinLgKVUiCDW/q4tdGJNpTHslWLhvgCOPl6IRIvIndKnQF7Poh156YB9lY/hvKzgbseNg8NRsQDWzxxz6sodkSaY0EMA1t+g7R7g5wmv9SJFBC8GnQUiOcIOB3F0RfrRYXwU3BydMHdSjwPMQt8VISpLdkIfw3IZXZAZJ4GmYqJuCOZ1bCxRxGLNcjtc6DDQdzGzFupqVA4TccRKTsBPBT4ZeTK2wz4WyDv88HvXRNEGq+BHD6TU2HvCWbehMCFdh5I5NZpKkw+F5aF7xinW3nXGvPn6JZreUjmN5D/bpDP8CoevzDhqCwClVIgKzCqQE/S8UlasxbKg9tiKwtoOwXD23Y16POgs0BvAXEaZ3/YEXG08X74vwMKuSqlneIUmhbl/R7obH7z3BsAAAMASURBVBDrRYXAG3mPgf8U0CWgshb9C61nHmGo87UgKpTTYb8BxGnIw2AfD/oQiL8FjlbyiA3mhfw/gL4BWgJaADoUxOfCslDJnA//pSAZcQSj6mKcenGFKRB+AyROk4WqYWpHYI7qz+n05r6Nff7prXQ6CREEBAFBQBDoBAKFKZCiCremPnj3RjP0EmMUpzeaYuFe1mgM7bn27G3vawbIP0FAEBAEBIHSEaicAiEia+v6IUxVHbO1b3An0xicBfcbV9d10F1ETC80JRGQSgkCgkDFEKikAokwuuFsff+qup52c+NR/cUWBAQBQaDKCFRagVQZOCmbICAICALTBgFLRUWBWICRYEFAEBAEBAE3AqJA3PhIrCAgCAgCgoAFAVEgFmAkWBAoDgGRJAhMTQREgUzN5yq1EgQEAUGg4wiIAuk4xJKBICAICAJTE4FeUCBTE3mplSAgCAgCPY6AKJAef4BSfEFAEBAEykJAFEhZyEu+gkAvICBlFAQcCIgCcYAjUYKAICAICAJ2BESB2LGRGEFAEBAEBAEHAqJAHOC0HyUSBAFBQBCYugiIApm6z1ZqJggIAoJARxEQBdJReEW4ICAIlIWA5Nt5BESBdB5jyUEQEAQEgSmJgCiQKflYpVKCgCAgCHQeAVEgnce4N3OQUgsCgoAg4EFAFIgHIIkWBAQBQUAQyEZAFEg2LhIqCAgCgkBZCPRMvqJAeuZRSUEFAUFAEKgWAqJAqvU8pDSCgCAgCPQMAqJAeuZRSUFDERA+QUAQ6A4CokC6g7PkIggIAoLAlENAFMiUe6RSIUFAEBAEuoNAWoF0J1/JRRAQBAQBQaDHERAF0uMPUIovCAgCgkBZCIgCKQt5yVcQSCMgIYJATyEgCqSnHpcUVhAQBASB6iAgCqQ6z0JKIggIAoJATyEwpRRITyEvhRUEBAFBoMcREAXS4w9Qii8ICAKCQFkIiAIpC3nJVxCYUghIZaYjAqJApuNTlzoLAoKAIFAAAqJACgBRRAgCgoAgMB0R+H8AAAD//9mZx/oAAAAGSURBVAMAbs/gePfIMMEAAAAASUVORK5CYII="/>
+<img alt="Craveer Logo" class="h-6 w-auto grayscale brightness-150" src="https://lh3.googleusercontent.com/aida/AP1WRLvWQ_r5qH4Fv0ggaGKL58ZtTGRRvwtLp3UxpiqZ25cPDFem2v8Fxw6SqMMAYf2G6TeB342WIVRoxnHBBZqmMv2xMjjjZcga6-S5cDlFwjDqvbNil3VKvlpc57-ZiZfeJx88eqyCgRhtqOGbGvuXIq_Zern8_r8HuSvGnUdj43NPs82bFX0ZCvMwoiyfVml6KhHeCHox1cDIoEnxCkzheXCt1rVpBG5tLdSybDcu4eTSo21KQZ_2vfZ5Kv-L"/>
 <span class="font-headline-md text-headline-md font-bold text-on-surface">Craveer</span>
 </div>
-<div class="flex gap-8">
-<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#">Privacy Policy</a>
-<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#">Terms of Service</a>
-<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#">Contact Us</a>
+<div class="flex flex-col sm:flex-row gap-4 md:gap-8 items-center">
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#">Privacy</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#">Terms</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#">Contact</a>
 </div>
-<p class="text-on-surface-variant font-body-md text-body-md">© 2024 Craveer. All rights reserved.</p>
+<p class="text-on-surface-variant font-body-md text-body-md">© 2024 Craveer.</p>
 </div>
 </footer>
 <script>
-        // Reveal Animations on Scroll
+        // Navigation Toggle
+        const menuToggle = document.getElementById('menu-toggle');
+        const menuClose = document.getElementById('menu-close');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        if (menuToggle && menuClose && mobileMenu) {
+            menuToggle.addEventListener('click', () => {
+                mobileMenu.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+
+            menuClose.addEventListener('click', () => {
+                mobileMenu.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+
+            mobileMenu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            });
+        }
+
+        // Scroll Observer with immediate check for elements already in view
         const observerOptions = {
             threshold: 0.1,
             rootMargin: '0px 0px -50px 0px'
@@ -830,16 +487,73 @@ void main() {
             });
         }, observerOptions);
 
-        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        document.querySelectorAll('.reveal').forEach(el => {
+            observer.observe(el);
+            // Check initial state
+            const rect = el.getBoundingClientRect();
+            if (rect.top < window.innerHeight) {
+                el.classList.add('active');
+            }
+        });
 
-        // Smooth Scrolling
+        // Smooth scroll
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                const target = document.querySelector(targetId);
+                if (target) {
+                    e.preventDefault();
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
             });
         });
+
+        // Simple WebGL Background Animation
+        const canvas = document.getElementById('bg-canvas');
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            let width, height;
+
+            const resize = () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            };
+
+            window.addEventListener('resize', resize);
+            resize();
+
+            const particles = Array.from({ length: 50 }, () => ({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                vx: (Math.random() - 0.5) * 0.5,
+                vy: (Math.random() - 0.5) * 0.5,
+                size: Math.random() * 2 + 1
+            }));
+
+            const animate = () => {
+                ctx.fillStyle = '#0b1120';
+                ctx.fillRect(0, 0, width, height);
+
+                ctx.fillStyle = 'rgba(193, 198, 219, 0.15)';
+                particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    if (p.x < 0) p.x = width;
+                    if (p.x > width) p.x = 0;
+                    if (p.y < 0) p.y = height;
+                    if (p.y > height) p.y = 0;
+
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+
+                requestAnimationFrame(animate);
+            };
+
+            animate();
+        }
     </script>
 </body></html>
